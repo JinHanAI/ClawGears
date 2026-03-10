@@ -4,9 +4,7 @@
 
 ### **Protect Your Mac, Guard Your Privacy**
 
-**The Security Audit Tool Built for OpenClaw**
-
-[![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](./LICENSE)
+**OpenClaw Security Audit Tool - Protect your Mac, guard your privacy**[![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](./LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple)](https://github.com/JinHanAI/clawgears)
 [![Version](https://img.shields.io/badge/version-1.1.0-green?style=for-the-badge)](https://github.com/JinHanAI/clawgears)
 

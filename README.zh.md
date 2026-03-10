@@ -246,6 +246,6 @@ MIT License - 详见 [LICENSE](./LICENSE)
 
 *保护您的 Mac，守护您的隐私*
 
-Made with ❤️ by [Victor.Chen](https://github.com/JinHanAI)
+Made with ❤️ by [Winnie.C](https://github.com/JinHanAI)
 
 </div>
