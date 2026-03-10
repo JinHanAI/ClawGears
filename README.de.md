@@ -64,7 +64,7 @@
 ./scripts/ip-leak-check.sh --all
 ```
 
-**Exklusives Feature:** Integriert mit der `openclaw.allegro.earth` Datenbank zur Prüfung, ob Ihre IP geleakt wurde
+**Exklusives Feature:** Integriert mit `openclaw.allegro.earth`, Censys und Shodan Datenbanken zur Prüfung, ob Ihre IP geleakt wurde
 
 ---
 

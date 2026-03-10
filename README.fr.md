@@ -64,7 +64,7 @@
 ./scripts/ip-leak-check.sh --all
 ```
 
-**Fonction exclusive :** Intégré à la base de données `openclaw.allegro.earth` pour vérifier si votre IP a fui
+**Fonction exclusive :** Intégré aux bases de données `openclaw.allegro.earth`, Censys et Shodan pour vérifier si votre IP a fui
 
 ---
 

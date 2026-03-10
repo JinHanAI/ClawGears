@@ -158,7 +158,7 @@ check_port_exposure() {
     local ports=(18789 8080 3000 5000)
     local exposed_ports=()
 
-    for port in $ports; do
+    for port in "${ports[@]}"; do
         local listener=$(lsof -i :$port 2>/dev/null | grep LISTEN || true)
         if [ -n "$listener" ]; then
             local bind_addr=$(echo "$listener" | awk '{print $NF}' | head -1)
@@ -180,6 +180,63 @@ check_port_exposure() {
     return 0
 }
 
+check_censys_exposure() {
+    local public_ip="$1"
+
+    echo "========================================"
+    echo "  Checking Censys Database"
+    echo "========================================"
+    echo ""
+
+    if [ "$public_ip" = "unknown" ]; then
+        print_warning "Cannot check Censys without public IP"
+        return 0
+    fi
+
+    echo "Your Public IP: $public_ip"
+    echo ""
+    print_info "Censys 是互联网扫描数据库，记录了所有暴露在公网的服务"
+    echo ""
+    echo "请访问以下链接检查您的 IP 是否被扫描到："
+    echo ""
+    echo "  🔗 https://search.censys.io/hosts/$public_ip"
+    echo ""
+    echo "如果显示您的 OpenClaw 端口 (18789) 或其他敏感服务，"
+    echo "说明您的 IP 已被收录到公网扫描数据库中。"
+    echo ""
+    print_warning "建议手动检查上述链接"
+    echo ""
+
+    return 0
+}
+
+check_shodan_exposure() {
+    local public_ip="$1"
+
+    echo "========================================"
+    echo "  Checking Shodan Database"
+    echo "========================================"
+    echo ""
+
+    if [ "$public_ip" = "unknown" ]; then
+        print_warning "Cannot check Shodan without public IP"
+        return 0
+    fi
+
+    echo "Your Public IP: $public_ip"
+    echo ""
+    print_info "Shodan 是另一个互联网扫描数据库"
+    echo ""
+    echo "请访问以下链接检查您的 IP："
+    echo ""
+    echo "  🔗 https://www.shodan.io/host/$public_ip"
+    echo ""
+    print_warning "建议手动检查上述链接"
+    echo ""
+
+    return 0
+}
+
 save_leak_check_result() {
     local ip="$1"
     local exposed="$2"
@@ -193,11 +250,29 @@ save_leak_check_result() {
     "public_ip": "$ip",
     "exposed": $exposed,
     "ports_checked": [18789, 8080, 3000, 5000],
+    "databases_checked": [
+        {
+            "name": "openclaw.allegro.earth",
+            "url": "https://openclaw.allegro.earth",
+            "description": "OpenClaw exposure database"
+        },
+        {
+            "name": "Censys",
+            "url": "https://search.censys.io/hosts/$ip",
+            "description": "Internet-wide scanning database"
+        },
+        {
+            "name": "Shodan",
+            "url": "https://www.shodan.io/host/$ip",
+            "description": "IoT and service scanning database"
+        }
+    ],
     "recommendations": [
         "Keep Gateway binding to loopback",
         "Enable authentication with strong tokens",
         "Regularly check openclaw.allegro.earth",
-        "Monitor network connections"
+        "Monitor network connections",
+        "Check Censys and Shodan for IP exposure"
     ]
 }
 EOF
@@ -279,6 +354,10 @@ if [ "$CHECK_ALL" = true ] || [ -n "$CHECK_IP" ]; then
     if [ $RESULT -ne 0 ]; then
         ((ERRORS++))
     fi
+    echo ""
+    check_censys_exposure "$CHECK_IP"
+    echo ""
+    check_shodan_exposure "$CHECK_IP"
     echo ""
 fi
 

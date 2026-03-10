@@ -64,7 +64,7 @@
 ./scripts/ip-leak-check.sh --all
 ```
 
-**独家功能：** 集成 `openclaw.allegro.earth` 数据库，检测您的 IP 是否已被泄露
+**独家功能：** 集成 `openclaw.allegro.earth`、Censys、Shodan 数据库，检测您的 IP 是否已被泄露
 
 ---
 
@@ -185,7 +185,7 @@ cd ClawGears
 
   [1] 快速安全检查     (5 个关键项， ~5 秒)
   [2] 完整安全审计     (全面检查, 详细报告)
-  [3] 检查 IP 泄露        (openclaw.allegro.earth 数据库)
+  [3] 检查 IP 泄露        (allegro.earth, Censys, Shodan)
   [4] 交互式修复        (自动修复安全问题)
   [5] 生成报告         (HTML/JSON 格式)
   [6] 系统安全         (防火墙, FileVault, SIP)
@@ -202,7 +202,7 @@ cd ClawGears
 |:-----|:-----|:-----|
 | `[1]` 快速安全检查 | 5 个关键项 | ~5 秒 |
 | `[2]` 完整安全审计 | 全面检查 + 详细报告 | ~30 秒 |
-| `[3]` 检查 IP 泄露 | 查询泄露数据库 | ~10 秒 |
+| `[3]` 检查 IP 泄露 | 查询 allegro.earth, Censys, Shodan | ~10 秒 |
 | `[4]` 交互式修复 | 自动修复安全问题 | 视情况 |
 | `[5]` 生成报告 | HTML/JSON 格式 | ~5 秒 |
 | `[6]` 系统安全 | 防火墙、FileVault、 SIP | ~5 秒 |

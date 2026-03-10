@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-03-11
+
+### Added
+- **Enhanced IP Leak Detection**: Now checks 3 databases instead of 1
+  - `openclaw.allegro.earth` - OpenClaw specific exposure database
+  - `Censys` - Internet-wide scanning database (https://search.censys.io)
+  - `Shodan` - IoT and service scanning database (https://www.shodan.io)
+- Updated JSON report to include all checked databases with URLs
+- Updated TUI menu and all README files to reflect multi-database support
+
+## [1.2.0] - 2026-03-10
+
+### Added
+- **Interactive TUI Menu** (`clawgears.sh`)
+  - ASCII art banner with "CLAWGEARS" branding
+  - 6 menu options for easy navigation
+  - Help system and documentation links
+- Fixed author attribution to Victor.Chen across all README files
+
 ## [1.1.0] - 2026-03-10
 
 ### Added

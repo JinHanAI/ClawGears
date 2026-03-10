@@ -64,7 +64,7 @@
 ./scripts/ip-leak-check.sh --all
 ```
 
-**Funzione esclusiva:** Integrato con il database `openclaw.allegro.earth` per verificare se il tuo IP è trapelato
+**Funzione esclusiva:** Integrato con i database `openclaw.allegro.earth`, Censys e Shodan per verificare se il tuo IP è trapelato
 
 ---
 

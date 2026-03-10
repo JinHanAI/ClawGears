@@ -62,7 +62,7 @@
 ./scripts/ip-leak-check.sh --all
 ```
 
-**Exclusive Feature:** Integrated with `openclaw.allegro.earth` database to check if your IP has been leaked
+**Exclusive Feature:** Integrated with `openclaw.allegro.earth`, Censys, and Shodan databases to check if your IP has been leaked
 
 ---
 
@@ -183,7 +183,7 @@ What would you like to do?
 
   [1] Quick Security Check     (5 critical items, ~5 sec)
   [2] Full Security Audit     (All checks, detailed report)
-  [3] Check IP Leak          (openclaw.allegro.earth database)
+  [3] Check IP Leak          (allegro.earth, Censys, Shodan)
   [4] Interactive Fix        (Auto-fix security issues)
   [5] Generate Report       (HTML/JSON format)
   [6] System Security       (Firewall, FileVault, SIP)
@@ -200,7 +200,7 @@ Enter your choice [1-6, H, Q]: _
 |:-------|:------------|:-----|
 | `[1]` Quick Security Check | 5 critical items | ~5 sec |
 | `[2]` Full Security Audit | All checks + detailed report | ~30 sec |
-| `[3]` Check IP Leak | Query openclaw.allegro.earth database | ~10 sec |
+| `[3]` Check IP Leak | Query allegro.earth, Censys, Shodan | ~10 sec |
 | `[4]` Interactive Fix | Auto-fix security issues | Varies |
 | `[5]` Generate Report | HTML/JSON format | ~5 sec |
 | `[6]` System Security | Firewall, FileVault, SIP | ~5 sec |

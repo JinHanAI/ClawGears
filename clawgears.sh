@@ -55,7 +55,7 @@ show_main_menu() {
     echo ""
     echo -e "  ${GREEN}[1]${NC} Quick Security Check     ${DIM}(5 critical items, ~5 sec)${NC}"
     echo -e "  ${GREEN}[2]${NC} Full Security Audit     ${DIM}(All checks, detailed report)${NC}"
-    echo -e "  ${GREEN}[3]${NC} Check IP Leak          ${DIM}(openclaw.allegro.earth database)${NC}"
+    echo -e "  ${GREEN}[3]${NC} Check IP Leak          ${DIM}(allegro.earth, Censys, Shodan)${NC}"
     echo -e "  ${GREEN}[4]${NC} Interactive Fix        ${DIM}(Auto-fix security issues)${NC}"
     echo -e "  ${GREEN}[5]${NC} Generate Report       ${DIM}(HTML/JSON format)${NC}"
     echo -e "  ${GREEN}[6]${NC} System Security       ${DIM}(Firewall, FileVault, SIP)${NC}"
