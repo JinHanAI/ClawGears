@@ -156,13 +156,28 @@
 | Mac 存储了 **敏感数据**（工作文件、个人照片） | |
 | 想要 **定期安全检查** | |
 
-### ⚡ 1 分钟快速检查
+### 🎮 交互式菜单（推荐）
 
 ```bash
 # 克隆仓库
 git clone https://github.com/JinHanAI/ClawGears.git
-cd clawgears
+cd ClawGears
 
+# 启动交互式菜单
+./clawgears.sh
+```
+
+**菜单选项：**
+- `[1]` 快速安全检查 - 5 秒内检查 5 个关键项
+- `[2]` 完整安全审计 - 详细扫描并生成报告
+- `[3]` 检查 IP 泄露 - 查询 openclaw.allegro.earth 数据库
+- `[4]` 交互式修复 - 自动修复安全问题
+- `[5]` 生成报告 - 创建 HTML/JSON 审计报告
+- `[6]` 系统安全 - 防火墙、FileVault、SIP 检查
+
+### ⚡ 1 分钟快速检查
+
+```bash
 # 快速检查（5 个关键项）
 ./scripts/quick-check.sh
 ```

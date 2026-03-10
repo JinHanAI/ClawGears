@@ -154,13 +154,28 @@
 | Mac stores **sensitive data** (work files, personal photos) | |
 | Want **regular security checks** | |
 
-### ⚡ 1-Minute Quick Check
+### 🎮 Interactive Menu (Recommended)
 
 ```bash
 # Clone the repository
 git clone https://github.com/JinHanAI/ClawGears.git
-cd clawgears
+cd ClawGears
 
+# Launch interactive menu
+./clawgears.sh
+```
+
+**Menu Options:**
+- `[1]` Quick Security Check - 5 critical items in 5 seconds
+- `[2]` Full Security Audit - Complete scan with detailed report
+- `[3]` Check IP Leak - Query openclaw.allegro.earth database
+- `[4]` Interactive Fix - Auto-fix security issues
+- `[5]` Generate Report - Create HTML/JSON audit report
+- `[6]` System Security - Firewall, FileVault, SIP check
+
+### ⚡ 1-Minute Quick Check
+
+```bash
 # Quick check (5 critical items)
 ./scripts/quick-check.sh
 ```
