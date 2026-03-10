@@ -1,6 +1,6 @@
-# 🦞 OpenClaw Security Audit
+# ⚙️ ClawGears
 
-> **Protect Your Mac,Guard Your Privacy** - The Security Audit Tool Built for OpenClaw
+> **Protect Your Mac, Guard Your Privacy** - The Security Audit Tool Built for OpenClaw
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)](https://github.com/JinHanAI/openclaw-security-audit)
@@ -44,7 +44,7 @@
 
 ---
 
-## 💡 Why Choose OpenClaw Security Audit?
+## 💡 Why Choose ClawGears?
 
 ### 🏆 Key Advantages
 
@@ -59,7 +59,7 @@
 
 ### 🆚 Comparison with Alternatives
 
-| Feature | OpenClaw Security Audit | Generic Security Tools |
+| Feature | ClawGears | Generic Security Tools |
 |---------|:-----------------------:|:----------------------:|
 | OpenClaw Deep Check | ✅ | ❌ |
 | IP Leak Detection | ✅ | ❌ |
@@ -173,7 +173,7 @@ This tool is for security audit purposes only. Please understand the impact befo
 
 <div align="center">
 
-**🦞 OpenClaw Security Audit**
+**🦞 ClawGears**
 
 *Protect Your Mac, Guard Your Privacy*
 

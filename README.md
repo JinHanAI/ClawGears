@@ -1,4 +1,4 @@
-# 🦞 OpenClaw Security Audit
+# ⚙️ ClawGears
 
 > **保护您的 Mac，守护您的隐私** - OpenClaw 专属安全审计工具
 
@@ -44,7 +44,7 @@
 
 ---
 
-## 💡 为什么选择 OpenClaw Security Audit？
+## 💡 为什么选择 ClawGears？
 
 ### 🏆 核心优势
 
@@ -59,7 +59,7 @@
 
 ### 🆚 与竞品对比
 
-| 功能 | OpenClaw Security Audit | 其他通用安全工具 |
+| 功能 | ClawGears | 其他通用安全工具 |
 |------|:-----------------------:|:----------------:|
 | OpenClaw 深度检查 | ✅ | ❌ |
 | IP 泄露检测 | ✅ | ❌ |
@@ -180,7 +180,7 @@ MIT License - 详见 [LICENSE](./LICENSE)
 
 <div align="center">
 
-**🦞 OpenClaw Security Audit**
+**🦞 ClawGears**
 
 *保护您的 Mac，守护您的隐私*
 

@@ -1,6 +1,6 @@
 {
-  "name": "openclaw-security-audit",
-  "description": "OpenClaw Security Audit - Comprehensive security audit tool for OpenClaw on macOS. Protect your privacy, secure your Mac.",
+  "name": "clawgears",
+  "description": "ClawGears - OpenClaw Security Audit Tool. Protect your Mac, guard your privacy.",
   "category": "security",
   "commands": [
     {
