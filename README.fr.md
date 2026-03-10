@@ -246,6 +246,6 @@ Cet outil est uniquement destiné à des fins d'audit de sécurité. Veuillez co
 
 *Protégez votre Mac, gardez votre vie privée*
 
-Made with ❤️ by [Winnie.C](https://github.com/JinHanAI)
+Made with ❤️ by [Victor.Ch](https://github.com/JinHanAI)
 
 </div>

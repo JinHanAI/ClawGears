@@ -291,6 +291,6 @@ This tool is for security audit purposes only. Please understand the impact befo
 
 *Protect Your Mac, Guard Your Privacy*
 
-Made with ❤️ by [Winnie.C](https://github.com/JinHanAI)
+Made with ❤️ by [Victor.Ch](https://github.com/JinHanAI)
 
 </div>
