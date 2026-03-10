@@ -165,13 +165,45 @@ cd ClawGears
 ./clawgears.sh
 ```
 
+**Menu Preview:**
+
+```
+ ██████╗██╗     ██╗     ███████╗ ██████╗ ██████╗ ███████╗██╗   ██╗
+██╔════╝██║     ██║     ██╔════╝██╔═══██╗██╔══██╗██╔════╝╚██╗ ██╔╝
+██║     ██║     ██║     █████╗  ██║   ██║██║  ██║█████╗   ╚████╔╝
+██║     ██║     ██║     ██╔══╝  ██║   ██║██║  ██║██╔══╝    ╚██╔╝
+╚███╗   ███████╗███████╗███████╗╚██████╔╚██████╔██║  ██║   ██║
+ ╚══╝   ╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝
+
+      OpenClaw Security Audit Tool
+      Protect Your Mac, Guard Your Privacy
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+What would you like to do?
+
+  [1] Quick Security Check     (5 critical items, ~5 sec)
+  [2] Full Security Audit     (All checks, detailed report)
+  [3] Check IP Leak          (openclaw.allegro.earth database)
+  [4] Interactive Fix        (Auto-fix security issues)
+  [5] Generate Report       (HTML/JSON format)
+  [6] System Security       (Firewall, FileVault, SIP)
+
+  [H] Help & Documentation
+  [Q] Quit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Enter your choice [1-6, H, Q]: _
+```
+
 **Menu Options:**
-- `[1]` Quick Security Check - 5 critical items in 5 seconds
-- `[2]` Full Security Audit - Complete scan with detailed report
-- `[3]` Check IP Leak - Query openclaw.allegro.earth database
-- `[4]` Interactive Fix - Auto-fix security issues
-- `[5]` Generate Report - Create HTML/JSON audit report
-- `[6]` System Security - Firewall, FileVault, SIP check
+| Option | Description | Time |
+|:-------|:------------|:-----|
+| `[1]` Quick Security Check | 5 critical items | ~5 sec |
+| `[2]` Full Security Audit | All checks + detailed report | ~30 sec |
+| `[3]` Check IP Leak | Query openclaw.allegro.earth database | ~10 sec |
+| `[4]` Interactive Fix | Auto-fix security issues | Varies |
+| `[5]` Generate Report | HTML/JSON format | ~5 sec |
+| `[6]` System Security | Firewall, FileVault, SIP | ~5 sec |
 
 ### ⚡ 1-Minute Quick Check
 
