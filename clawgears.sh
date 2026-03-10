@@ -3,7 +3,7 @@
 # ClawGears - Interactive Menu Interface
 # =============================================================================
 # Description: User-friendly menu interface for ClawGears security audit tool
-# Author: Victor.Ch
+# Author: Victor.Chen
 # Version: 1.2.0
 # Created: 2026-03-10
 # =============================================================================
