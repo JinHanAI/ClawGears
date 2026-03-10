@@ -3,8 +3,8 @@
 > **保护您的 Mac，守护您的隐私** - OpenClaw 专属安全审计工具
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
-[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)](https://github.com/JinHanAI/openclaw-security-audit)
-[![Version](https://img.shields.io/badge/version-1.1.0-green)](https://github.com/JinHanAI/openclaw-security-audit)
+[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)](https://github.com/JinHanAI/clawgears)
+[![Version](https://img.shields.io/badge/version-1.1.0-green)](https://github.com/JinHanAI/clawgears)
 
 **中文文档** | [English Documentation](./README.en.md)
 
@@ -102,8 +102,8 @@
 ### 1 分钟快速检查
 ```bash
 # 克隆仓库
-git clone https://github.com/JinHanAI/openclaw-security-audit.git
-cd openclaw-security-audit
+git clone https://github.com/JinHanAI/clawgears.git
+cd clawgears
 
 # 快速检查（5 个关键项）
 ./scripts/quick-check.sh

@@ -3,8 +3,8 @@
 > **Protect Your Mac, Guard Your Privacy** - The Security Audit Tool Built for OpenClaw
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
-[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)](https://github.com/JinHanAI/openclaw-security-audit)
-[![Version](https://img.shields.io/badge/version-1.1.0-green)](https://github.com/JinHanAI/openclaw-security-audit)
+[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)](https://github.com/JinHanAI/clawgears)
+[![Version](https://img.shields.io/badge/version-1.1.0-green)](https://github.com/JinHanAI/clawgears)
 
 [中文文档](./README.md) | **English Documentation**
 
@@ -102,8 +102,8 @@
 ### 1-Minute Quick Check
 ```bash
 # Clone the repository
-git clone https://github.com/JinHanAI/openclaw-security-audit.git
-cd openclaw-security-audit
+git clone https://github.com/JinHanAI/clawgears.git
+cd clawgears
 
 # Quick check (5 critical items)
 ./scripts/quick-check.sh
