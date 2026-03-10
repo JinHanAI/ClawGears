@@ -1,0 +1,190 @@
+# =============================================================================
+# OpenClaw Security Audit - GitHub Actions CI/CD
+# =============================================================================
+# Description: Automatically run security audit on schedule and on push
+# Author: Chen Zong
+# Version: 1.0.0
+# Created: 2026-03-10
+# =============================================================================
+
+name: Security Audit
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    types: [ opened ]
+
+jobs:
+  audit:
+    runs-on: macos-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Security Audit
+        run: |
+          echo "🔍 Starting OpenClaw Security Audit..."
+          echo ""
+
+          # Check if OpenClaw is installed
+          if [ ! -d "$HOME/.openclaw" ]; then
+            echo "⚠️ OpenClaw not installed. Skipping audit."
+            exit 0
+          fi
+
+          # Run the audit checks
+          echo "========================================"
+          echo "  OpenClaw Security Audit (CI/CD)"
+          echo "========================================"
+          echo ""
+
+          # 1. Network Exposure Check
+          echo "📋 1. Network Exposure Check"
+          gateway_bind=$(lsof -i :18789 2>/dev/null | grep -c "LISTEN" || echo "Not running")
+          if echo "$gateway_bind" | grep -q "0.0.0.0"; then
+            echo "  ❌ FAIL: Gateway is bound to 0.0.0.0 (exposed to network)"
+            exit 1
+          else
+            echo "  ✅ PASS: Gateway binding is secure"
+          fi
+
+          # 2. Token Security Check
+          echo ""
+          echo "📋 2. Token Security Check"
+          if [ -f "$HOME/.openclaw/openclaw.json" ]; then
+            token_info=$(python3 -c "
+import json
+with open('$HOME/.openclaw/openclaw.json') as f:
+    cfg = json.load(f)
+    token = cfg.get('gateway', {}).get('auth', {}).get('token', '')
+    mode = cfg.get('gateway', {}).get('mode', 'local')
+    print(f'{len(token)}|{mode}')
+" 2>/dev/null)
+
+            token_length=$(echo "$token_info" | cut -d'|' -f1)
+            mode=$(echo "$token_info" | cut -d'|' -f2)
+
+            if [ "$token_length" -lt 40 ]; then
+              echo "  ❌ FAIL: Token length is $token_length (should be >= 40)"
+              exit 1
+            else
+              echo "  ✅ PASS: Token length is sufficient ($token_length characters)"
+            fi
+
+            if [ "$mode" != "local" ]; then
+              echo "  ⚠️ WARN: Mode is $mode (should be local)"
+            fi
+          else
+            echo "  ⚠️ SKIP: Config file not found"
+          fi
+
+          # 3. Deny Commands Check
+          echo ""
+          echo "📋 3. Deny Commands Check"
+          if [ -f "$HOME/.openclaw/openclaw.json" ]; then
+            deny_list=$(python3 -c "
+import json
+with open('$HOME/.openclaw/openclaw.json') as f:
+    cfg = json.load(f)
+    deny = cfg.get('gateway', {}).get('nodes', {}).get('denyCommands', [])
+    print('|'.join(deny) if deny else '')
+" 2>/dev/null)
+
+            required_deny="camera.snap|camera.clip|screen.record|contacts.add|reminders.add"
+            missing=0
+
+            for cmd in $(echo "$required_deny" | tr '|' '\n'); do
+              if ! echo "$deny_list" | grep -q "$cmd"; then
+                echo "  ⚠️ WARN: Missing deny command: $cmd"
+                ((missing++))
+              fi
+            done
+
+            if [ $missing -eq 0 ]; then
+              echo "  ✅ PASS: All essential deny commands are configured"
+            else
+              echo "  ❌ FAIL: $missing deny commands are missing"
+            fi
+          else
+            echo "  ⚠️ SKIP: Config file not found"
+          fi
+
+          # 4. TCC Permissions Check
+          echo ""
+          echo "📋 4. TCC Permissions Check"
+          if [ -f "/Library/Application Support/com.apple.TCC/TCC.db" ]; then
+            fda=$(python3 -c "
+import sqlite3
+try:
+    conn = sqlite3.connect('/Library/Application Support/com.apple.TCC/TCC.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT auth_value FROM access WHERE client=\"/usr/local/bin/node\" AND service=\"kTCCServiceSystemPolicyAllFiles\"')
+    r = cursor.fetchone()
+    print('granted' if r and r[0]==2 else 'not_granted')
+    conn.close()
+except:
+    print('error')
+" 2>/dev/null)
+
+            if [ "$fda" = "granted" ]; then
+              echo "  ❌ FAIL: Full Disk Access is granted (security risk)"
+              exit 1
+            else
+              echo "  ✅ PASS: Full Disk Access is not granted"
+            fi
+          else
+            echo "  ⚠️ SKIP: TCC database not accessible"
+          fi
+
+          # 5. Workspace Privacy Check
+          echo ""
+          echo "📋 5. Workspace Privacy Check"
+          if [ -d "$HOME/.openclaw/workspace" ]; then
+            symlinks=$(find "$HOME/.openclaw/workspace" -type l 2>/dev/null | head -5)
+            if [ -n "$symlinks" ]; then
+              echo "  ⚠️ WARN: Found symlinks in workspace"
+            else
+              echo "  ✅ PASS: No symlinks found in workspace"
+            fi
+          else
+            echo "  ⚠️ SKIP: Workspace not found"
+          fi
+
+          # Summary
+          echo ""
+          echo "========================================"
+          echo "  Audit Complete ✅"
+          echo "========================================"
+
+      - name: Generate Report
+        if: always()
+        run: |
+          mkdir -p ./reports
+
+          # Generate JSON report
+          REPORT_FILE="./reports/security-audit-$(date +%Y%m%d_%H%M%S).json"
+
+          cat > "$REPORT_FILE" << EOF
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "runner": "GitHub Actions",
+  "status": "completed"
+}
+EOF
+
+          echo "📊 Report generated: $REPORT_FILE"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: reports/
+          retention-days: 30

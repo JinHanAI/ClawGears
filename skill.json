@@ -1,0 +1,54 @@
+{
+  "name": "openclaw-security-audit",
+  "description": "OpenClaw Security Audit - Comprehensive security audit tool for OpenClaw on macOS. Protect your privacy, secure your Mac.",
+  "category": "security",
+  "commands": [
+    {
+      "name": "run-audit",
+      "description": "Execute full security audit with all checks"
+      "script": "scripts/generate-report.sh"
+    },
+    {
+      "name": "quick-check",
+      "description": "Quick check for critical security items (network, token, permissions)"
+    },
+    {
+      "name": "fix-exposed",
+      "description": "Auto-fix exposed Gateway configuration",
+      "script": "scripts/fix-exposed-gateway.sh"
+    },
+    {
+      "name": "fix-token",
+      "description": "Generate new secure token",
+      "script": "scripts/fix-exposed-gateway.sh"
+    },
+    {
+      "name": "fix-deny",
+      "description": "Add essential deny commands",
+      "script": "scripts/fix-exposed-gateway.sh"
+    },
+    {
+      "name": "check-leak",
+      "description": "Check if your IP is exposed on openclaw.allegro.earth",
+      "script": "scripts/ip-leak-check.sh"
+    },
+    {
+      "name": "generate-report",
+      "description": "Generate HTML/JSON audit report",
+      "script": "scripts/generate-report.sh"
+    }
+  ],
+  "scripts": [
+    "scripts/fix-exposed-gateway.sh",
+    "scripts/generate-report.sh"
+  ],
+  "ci_cd": ".github/workflows/security-audit.yml",
+  "documentation": {
+    "readme_cn": "README.md",
+    "readme_en": "README.en.md"
+  },
+  "author": "Chen Zong",
+  "version": "1.1.0",
+  "created": "2026-03-02",
+  "updated": "2026-03-10"
+}
