@@ -3,7 +3,7 @@
 # OpenClaw Security Audit - History Tracker
 # =============================================================================
 # Description: Track audit history and enable comparison over time
-# Author: Victor.Chen
+# Author: Winnie.C
 # Version: 1.0.0
 # Created: 2026-03-10
 # =============================================================================

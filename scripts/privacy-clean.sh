@@ -3,7 +3,7 @@
 # OpenClaw Security Audit - Privacy Clean Script
 # =============================================================================
 # Description: Clean privacy information before open source release
-# Author: Victor.Chen
+# Author: Winnie.C
 # Version: 1.0.0
 # Created: 2026-03-10
 # =============================================================================

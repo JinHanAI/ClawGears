@@ -7,8 +7,8 @@
 **Das Sicherheits-Audit-Tool für OpenClaw**
 
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](./LICENSE)
-[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple)](https://github.com/JinHanAI/clawgears)
-[![Version](https://img.shields.io/badge/version-1.1.0-green?style=for-the-badge)](https://github.com/JinHanAI/clawgears)
+[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple)](https://github.com/JinHanAI/ClawGears)
+[![Version](https://img.shields.io/badge/version-1.1.0-green?style=for-the-badge)](https://github.com/JinHanAI/ClawGears)
 
 [English](./README.md) | [中文](./README.zh.md) | **Deutsch** | [Français](./README.fr.md) | [Italiano](./README.it.md)
 
@@ -160,7 +160,7 @@
 
 ```bash
 # Repository klonen
-git clone https://github.com/JinHanAI/clawgears.git
+git clone https://github.com/JinHanAI/ClawGears.git
 cd clawgears
 
 # Schnellprüfung (5 kritische Elemente)

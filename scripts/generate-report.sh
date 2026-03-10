@@ -3,7 +3,7 @@
 # OpenClaw Security Audit - Report Generator
 # =============================================================================
 # Description: Generate HTML/JSON audit reports
-# Author: Victor.Chen
+# Author: Winnie.C
 # Version: 1.0.0
 # Created: 2026-03-10
 # =============================================================================
@@ -341,18 +341,23 @@ generate_json_report() {
     local warn_count=0
     local skip_count=0
 
-    declare -A results
+    # Start JSON structure
+    local checks_json=""
 
     for check_func in check_network_exposure check_token_security check_deny_commands check_tcc_permissions check_icloud_sync check_workspace_privacy check_network_connections check_logs; do
-        local check_name=$(echo "$check_func" | sed 's/check_/g' | sed 's/_/ /g')
+        local check_name=$(echo "$check_func" | sed 's/check_//g' | sed 's/_/ /g')
         local result=$($check_func)
         local status=$(echo "$result" | cut -d'|' -f1)
         local details=$(echo "$result" | cut -d'|' -f2-)
 
-        results["$check_name"]={
-            "status": "$status",
-            "details": "$details"
-        }
+        # Escape special characters in details for JSON
+        details=$(echo "$details" | sed 's/"/\\"/g' | sed 's/\\/\\\\/g')
+
+        # Build checks JSON
+        if [ -n "$checks_json" ]; then
+            checks_json="${checks_json},"
+        fi
+        checks_json="${checks_json}\"$check_name\": {\"status\": \"$status\", \"details\": \"$details\"}"
 
         case $status in
             PASS) ((pass_count++)) ;;
@@ -365,7 +370,7 @@ generate_json_report() {
     # Generate JSON
     cat > "$report_file" << EOF
 {
-    "timestamp": "$TIMESTAMP",
+    "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
     "summary": {
         "total": $((pass_count + fail_count + warn_count)),
         "passed": $pass_count,
@@ -373,7 +378,9 @@ generate_json_report() {
         "warnings": $warn_count,
         "skipped": $skip_count
     },
-    "checks": $(printf '%s\n' "$(declare -p results | jq -c '.[] | tojson @ 1')" | sed '$s/$/,/; $s/$/;/')
+    "checks": {
+        $checks_json
+    }
 }
 EOF
 
@@ -389,11 +396,11 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -f|--format)
             OUTPUT_FORMAT="$2"
-            shift
+            shift 2
             ;;
         -o|--output)
             OUTPUT_DIR="$2"
-            shift
+            shift 2
             ;;
         -q|--quick)
             QUICK_MODE=true

@@ -3,7 +3,7 @@
 # OpenClaw Security Audit - Quick Check Mode
 # =============================================================================
 # Description: Quick security check for critical items only
-# Author: Victor.Chen
+# Author: Winnie.C
 # Version: 1.0.0
 # Created: 2026-03-10
 # =============================================================================

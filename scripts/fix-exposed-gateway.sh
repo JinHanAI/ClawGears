@@ -3,7 +3,7 @@
 # OpenClaw Security Audit - Auto Fix Script
 # =============================================================================
 # Description: Automatically fix exposed Gateway configuration
-# Author: Victor.Chen
+# Author: Winnie.C
 # Version: 1.0.0
 # Created: 2026-03-10
 # =============================================================================

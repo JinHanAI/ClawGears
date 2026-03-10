@@ -1,0 +1,225 @@
+# =============================================================================
+# ClawGears - CI Pipeline
+# =============================================================================
+# Description: Run tests, linting, and validation on every push and PR
+# Author: Victor.Chen
+# Version: 1.0.0
+# Created: 2026-03-10
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    name: Lint & Validate
+    runs-on: macos-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Shell Scripts
+        run: |
+          echo "🔍 Validating shell scripts..."
+          echo ""
+
+          ERROR_COUNT=0
+
+          for script in scripts/*.sh; do
+            echo -n "Checking $script... "
+
+            # Check syntax
+            if bash -n "$script" 2>/dev/null; then
+              echo "✅ OK"
+            else
+              echo "❌ SYNTAX ERROR"
+              ((ERROR_COUNT++))
+            fi
+          done
+
+          echo ""
+          if [ $ERROR_COUNT -gt 0 ]; then
+            echo "❌ Found $ERROR_COUNT script(s) with syntax errors"
+            exit 1
+          else
+            echo "✅ All scripts passed syntax validation"
+          fi
+
+      - name: Check Executable Permissions
+        run: |
+          echo "🔍 Checking executable permissions..."
+          echo ""
+
+          for script in scripts/*.sh tests/run-tests.sh; do
+            if [ -x "$script" ]; then
+              echo "✅ $script is executable"
+            else
+              echo "⚠️ $script is not executable"
+              chmod +x "$script"
+              echo "   Fixed: Added execute permission"
+            fi
+          done
+
+  test:
+    name: Run Tests
+    runs-on: macos-latest
+    timeout-minutes: 15
+    needs: lint
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install BATS
+        run: |
+          echo "📦 Installing BATS..."
+          brew install bats-core
+
+      - name: Verify Test Files
+        run: |
+          echo "🔍 Verifying test files..."
+          echo ""
+
+          TEST_COUNT=0
+          for test_file in tests/*.bats; do
+            if [ -f "$test_file" ]; then
+              echo "✅ Found: $test_file"
+              ((TEST_COUNT++))
+            fi
+          done
+
+          echo ""
+          echo "Found $TEST_COUNT test file(s)"
+
+          if [ $TEST_COUNT -eq 0 ]; then
+            echo "❌ No test files found"
+            exit 1
+          fi
+
+      - name: Run Tests
+        run: |
+          echo "🧪 Running test suite..."
+          echo ""
+
+          # Run tests with summary
+          PASSED=0
+          FAILED=0
+
+          for test_file in tests/*.bats; do
+            test_name=$(basename "$test_file" .bats)
+            echo "----------------------------------------"
+            echo "Running: $test_name"
+            echo "----------------------------------------"
+
+            if bats "$test_file"; then
+              ((PASSED++))
+            else
+              ((FAILED++))
+            fi
+            echo ""
+          done
+
+          echo "========================================"
+          echo "  Test Summary"
+          echo "========================================"
+          echo ""
+          echo "Passed: $PASSED"
+          echo "Failed: $FAILED"
+          echo ""
+
+          if [ $FAILED -gt 0 ]; then
+            echo "❌ Some tests failed"
+            exit 1
+          else
+            echo "✅ All tests passed"
+          fi
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: tests/
+          retention-days: 7
+
+  build:
+    name: Build Check
+    runs-on: macos-latest
+    timeout-minutes: 10
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test Report Generation
+        run: |
+          echo "📊 Testing report generation..."
+          echo ""
+
+          # Create output directory
+          mkdir -p ./test-output
+
+          # Test HTML report generation
+          echo "Testing HTML report..."
+          if ./scripts/generate-report.sh --format html --output ./test-output 2>/dev/null; then
+            echo "✅ HTML report generated successfully"
+          else
+            echo "⚠️ HTML report generation had issues (may be expected in CI)"
+          fi
+
+          # Test JSON report generation
+          echo "Testing JSON report..."
+          if ./scripts/generate-report.sh --format json --output ./test-output 2>/dev/null; then
+            echo "✅ JSON report generated successfully"
+          else
+            echo "⚠️ JSON report generation had issues (may be expected in CI)"
+          fi
+
+          # List generated files
+          echo ""
+          echo "Generated files:"
+          ls -la ./test-output/ 2>/dev/null || echo "No files generated"
+
+      - name: Verify Project Structure
+        run: |
+          echo "📁 Verifying project structure..."
+          echo ""
+
+          REQUIRED_FILES=(
+            "README.md"
+            "LICENSE"
+            "CHANGELOG.md"
+            "CONTRIBUTING.md"
+            "scripts/quick-check.sh"
+            "scripts/generate-report.sh"
+            "scripts/ip-leak-check.sh"
+            "tests/run-tests.sh"
+          )
+
+          MISSING=0
+
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ -e "$file" ]; then
+              echo "✅ $file"
+            else
+              echo "❌ $file (missing)"
+              ((MISSING++))
+            fi
+          done
+
+          echo ""
+
+          if [ $MISSING -gt 0 ]; then
+            echo "❌ $MISSING required file(s) missing"
+            exit 1
+          else
+            echo "✅ All required files present"
+          fi

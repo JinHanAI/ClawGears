@@ -3,7 +3,7 @@
 # OpenClaw Security Audit - System Security Checks
 # =============================================================================
 # Description: macOS system-level security checks (Firewall, FileVault, SIP)
-# Author: Victor.Chen
+# Author: Winnie.C
 # Version: 1.0.0
 # Created: 2026-03-10
 # =============================================================================

@@ -1,0 +1,45 @@
+# =============================================================================
+# CODEOWNERS - ClawGears
+# =============================================================================
+# This file defines the code owners for this repository.
+# Code owners are automatically requested for review when someone opens
+# a pull request that modifies code that they own.
+#
+# For more information, see:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# =============================================================================
+
+# Default owners for everything in the repo
+* @JinHanAI
+
+# =============================================================================
+# By Directory
+# =============================================================================
+
+# Core scripts
+/scripts/ @JinHanAI
+
+# Tests
+/tests/ @JinHanAI
+
+# Documentation
+/README.md @JinHanAI
+/CHANGELOG.md @JinHanAI
+/CONTRIBUTING.md @JinHanAI
+
+# GitHub workflows
+/.github/ @JinHanAI
+
+# =============================================================================
+# By File Type
+# =============================================================================
+
+# Shell scripts
+*.sh @JinHanAI
+
+# Test files
+*.bats @JinHanAI
+
+# Configuration
+.gitignore @JinHanAI
+LICENSE @JinHanAI

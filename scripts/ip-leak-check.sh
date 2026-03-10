@@ -3,7 +3,7 @@
 # OpenClaw Security Audit - IP Leak Check
 # =============================================================================
 # Description: Check if your IP is exposed on openclaw.allegro.earth
-# Author: Victor.Chen
+# Author: Winnie.C
 # Version: 1.0.0
 # Created: 2026-03-10
 # =============================================================================

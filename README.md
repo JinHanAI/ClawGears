@@ -5,8 +5,8 @@
 ### **Protect Your Mac, Guard Your Privacy**
 
 **OpenClaw Security Audit Tool - Protect your Mac, guard your privacy**[![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](./LICENSE)
-[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple)](https://github.com/JinHanAI/clawgears)
-[![Version](https://img.shields.io/badge/version-1.1.0-green?style=for-the-badge)](https://github.com/JinHanAI/clawgears)
+[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple)](https://github.com/JinHanAI/ClawGears)
+[![Version](https://img.shields.io/badge/version-1.1.0-green?style=for-the-badge)](https://github.com/JinHanAI/ClawGears)
 
 **English** | [中文](./README.zh.md) | [Deutsch](./README.de.md) | [Français](./README.fr.md) | [Italiano](./README.it.md)
 
@@ -158,7 +158,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/JinHanAI/clawgears.git
+git clone https://github.com/JinHanAI/ClawGears.git
 cd clawgears
 
 # Quick check (5 critical items)
@@ -244,6 +244,6 @@ This tool is for security audit purposes only. Please understand the impact befo
 
 *Protect Your Mac, Guard Your Privacy*
 
-Made with ❤️ by [Victor.Chen](https://github.com/JinHanAI)
+Made with ❤️ by [Winnie.C](https://github.com/JinHanAI)
 
 </div>

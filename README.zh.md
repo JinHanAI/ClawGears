@@ -7,8 +7,8 @@
 **OpenClaw 专属安全审计工具**
 
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](./LICENSE)
-[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple)](https://github.com/JinHanAI/clawgears)
-[![Version](https://img.shields.io/badge/version-1.1.0-green?style=for-the-badge)](https://github.com/JinHanAI/clawgears)
+[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple)](https://github.com/JinHanAI/ClawGears)
+[![Version](https://img.shields.io/badge/version-1.1.0-green?style=for-the-badge)](https://github.com/JinHanAI/ClawGears)
 
 [English](./README.md) | **中文** | [Deutsch](./README.de.md) | [Français](./README.fr.md) | [Italiano](./README.it.md)
 
@@ -160,7 +160,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/JinHanAI/clawgears.git
+git clone https://github.com/JinHanAI/ClawGears.git
 cd clawgears
 
 # 快速检查（5 个关键项）
