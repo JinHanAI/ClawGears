@@ -96,15 +96,25 @@ ClawGears is a security audit tool for OpenClaw/MoltBot/ClawdBot users on macOS.
 
 ---
 
-## Security Risks Detected
+## Security Risks Explained
 
-| Risk | Severity | Description |
-|------|----------|-------------|
-| Gateway exposed | CRITICAL | Port bound to 0.0.0.0, accessible from internet |
-| Weak token | HIGH | Token length < 40 characters |
-| Sensitive commands allowed | HIGH | Camera/screen capture commands not blocked |
-| FDA granted | MEDIUM | Full Disk Access enabled |
-| IP in leak database | HIGH | IP found in openclaw.allegro.earth, Censys, or Shodan |
+Use this section to understand each risk, its actual impact, and whether it applies to your situation.
+
+| Risk | What It Protects | Real Impact | Fix Priority |
+|------|-------------------|--------------|--------------|
+| **Gateway exposed** | Prevent unauthorized access to your AI assistant | 🔴 **Critical** - Anyone on the internet can control your AI. **Fix immediately** if exposed. | **Weak token** | Prevent API key theft | 🟠 **High** - If leaked, attackers can impersonate you assistant and use your API keys. **Fix recommended** but token < 64 chars. | **Sensitive commands** | Prevent privacy invasion (camera, screenshots) | 🟠 **High** - AI could these commands could spy on you or capture your screen. **Fix recommended** if not blocked. | **FDA granted** | Limit AI file access | 🟡 **Medium** - AI can read all your files. **Evaluate based on your trust level** - Only enable if you truly need this capability. - Consider if your AI is running in a secure environment. - Alternative: Use project-specific folder permissions. | **FileVault disabled** | Protect data if disk is stolen | 🟡 **Medium** - If Mac is stolen, all data is accessible. **Evaluate based on your situation:**
+        - ✅ **Enable** if Mac is portable or in shared spaces
+        - ⚠️ **OK to disable** if you need **remote restart control** (e.g., for Mac-to-Mac sync)
+        - If disabled, consider physical security measures instead
+    | **IP in leak database** | Check if already exposed | 🟠 **High** - Your IP is in a public exposure database. **Check before panicking:**
+        - If you've been using OpenClaw for a while without issues, it IP may have been indexed already.
+        - If you just started, use the tool: do a quick check and not a leak.
+    | **iCloud sync enabled** | Prevent sensitive data cloud sync | 🟡 **Low** - iCloud may sync Documents, Desktop, Pictures by default. **Evaluate based on your needs:**
+        - ✅ **Enable** if you store sensitive data in these folders
+        - ⚠️ **OK to disable** if you don't store sensitive data in these locations
+        - If disabled, consider using .gitignore for excluding patterns
+    | **SIP disabled** | Protect system integrity | 🟡 **Low** - System-level protections are reduced. **Usually OK to keep enabled, - Only disable if you have a specific, legitimate reason (e.g., development, testing)
+    - If disabled, be extra cautious about what you install
 
 ---
 

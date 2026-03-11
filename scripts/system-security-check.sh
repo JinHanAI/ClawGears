@@ -98,23 +98,46 @@ check_filevault() {
     local fv_status=$(fdesetup -status 2>/dev/null)
 
     echo "FileVault Status: $fv_status"
+    echo ""
+
+    # Explain what this check means
+    echo "📌 这个检查项的作用:"
+    echo "   FileVault 是 macOS 的磁盘加密功能，防止硬盘被盗/丢失后他人读取数据"
+    echo ""
 
     if echo "$fv_status" | grep -q "FileVault is On"; then
-        print_success "FileVault encryption is enabled"
+        print_success "FileVault 已开启"
 
         # Check if using secure key
         local fv_info=$(diskutil info / 2>/dev/null | grep -A5 "FileVault")
         echo ""
-        echo "Encryption Details:"
+        echo "加密详情:"
         echo "$fv_info"
     else
-        print_error "FileVault is NOT enabled"
+        print_warning "FileVault 未开启"
         echo ""
-        echo "⚠️ CRITICAL: Your disk is not encrypted!"
-        echo "If your Mac is stolen, all data will be accessible."
+        echo "⚡ 对您的实际影响:"
         echo ""
-        echo "Recommendation: Enable FileVault with:"
-        echo "  System Preferences > Security & Privacy > FileVault > Turn On FileVault"
+        echo "   ┌─────────────────────────────────────────────────────┐"
+        echo "   │ 使用场景                              │ 风险程度 │"
+        echo "   ├─────────────────────────────────────────────────────┤"
+        echo "   │ Mac 固定在安全场所（办公室/家中）      │ 🟢 较低  │"
+        echo "   │ 经常携带外出（咖啡厅/出差）            │ 🟠 较高  │"
+        echo "   │ 存储敏感数据（财务/客户信息）          │ 🔴 很高  │"
+        echo "   │ 需要远程重启控制（SSH/远程管理）       │ ⚪ 可接受│"
+        echo "   └─────────────────────────────────────────────────────┘"
+        echo ""
+        echo "💡 建议:"
+        echo "   等级: 【可选】(根据实际场景决定)"
+        echo ""
+        echo "   • 如果您是因为远程控制需求而关闭 FileVault，这是合理的选择"
+        echo "   • 可以通过其他方式补偿风险："
+        echo "     - 确保物理安全（Mac 放在安全地点）"
+        echo "     - 定期备份重要数据"
+        echo "     - 使用强密码保护账户"
+        echo ""
+        echo "   • 如果需要开启 FileVault:"
+        echo "     系统偏好设置 > 安全性与隐私 > FileVault > 开启 FileVault"
     fi
 
     echo ""
