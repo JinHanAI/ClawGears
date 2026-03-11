@@ -1,14 +1,25 @@
 # ClawGears Security Audit Skill
 
-[![License](https://img.shields.io/badge/license-GPL%203.0-blue)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-1.4.0-green)](https://github.com/JinHanAI/ClawGears)
 [![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?logo=apple)](https://github.com/JinHanAI/ClawGears)
 
 OpenClaw Security Audit Skill - Protect your Mac, guard your privacy.
 
+## 🌟 What's New in v1.4.0
+
+**Context-Aware Risk Explanations** - No more one-size-fits-all recommendations!
+
+Each security check now provides:
+- 📌 What this check protects
+- ⚡ Real impact based on **your** scenario (risk table)
+- 💡 Graded recommendations (🔴must/🟠recommended/🟡optional/⚪evaluate)
+- Legitimate reasons to not fix
+- Alternative compensating measures
+
 ## Installation
 
 ```bash
-clawhub install clawgears
+clawhub install clawgears-securityaudit
 ```
 
 ## Quick Start
@@ -27,15 +38,17 @@ After installation, ask your OpenClaw agent:
 - 💾 TCC permission audit
 - 🌐 IP leak detection (allegro.earth, Censys, Shodan)
 - 🔧 Auto-fix capabilities
+- **🆕 Context-aware risk explanations**
 
 ## Scripts Included
 
 | Script | Purpose |
 |--------|---------|
-| `quick-check.sh` | 5-second security check |
-| `ip-leak-check.sh` | IP exposure detection |
+| `quick-check.sh` | 5-second security check with context-aware output |
+| `ip-leak-check.sh` | IP exposure detection (3 databases) |
 | `interactive-fix.sh` | Auto-fix security issues |
 | `generate-report.sh` | Generate audit reports |
+| `system-security-check.sh` | macOS system security (FileVault, SIP, Firewall) |
 
 ## Full Repository
 

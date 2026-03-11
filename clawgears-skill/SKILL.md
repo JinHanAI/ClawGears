@@ -4,6 +4,14 @@
 
 ClawGears is a security audit tool for OpenClaw/MoltBot/ClawdBot users on macOS. It helps detect and fix security vulnerabilities that could expose your AI assistant to the public internet.
 
+**🌟 New in v1.4.0: Context-Aware Risk Explanations**
+
+Instead of one-size-fits-all "best practices", ClawGears now provides **scenario-based risk analysis**:
+- Each check explains **what it protects** and **real impact by scenario**
+- Recommendations are **graded**: 🔴必须 / 🟠建议 / 🟡可选 / ⚪评估后决定
+- **Legitimate reasons to not fix** are acknowledged
+- **Alternative compensating measures** are suggested
+
 **Use this skill when:**
 - User asks about OpenClaw security
 - User wants to check if their AI assistant is exposed
