@@ -8,7 +8,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](./LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple)](https://github.com/JinHanAI/ClawGears)
-[![Version](https://img.shields.io/badge/version-1.4.0-green?style=for-the-badge)](https://github.com/JinHanAI/ClawGears)
+[![Version](https://img.shields.io/badge/version-1.5.0-green?style=for-the-badge)](https://github.com/JinHanAI/ClawGears)
 
 [English](./README.md) | [中文](./README.zh.md) | [Deutsch](./README.de.md) | **Français** | [Italiano](./README.it.md) | [日本語](./README.ja.md) | [Español](./README.es.md)
 

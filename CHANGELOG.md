@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-03-11
+
+### Added
+- **Japanese README** (`README.ja.md`) - Full Japanese translation
+- **Spanish README** (`README.es.md`) - Full Spanish translation
+- Multi-language support in ClawHub skill
+
+### Changed
+- Fixed language mixing issues in English README (Chinese → English)
+- Updated all language links to include Japanese and Spanish
+
+### Supported Languages
+Now supports 7 languages:
+| 🇬🇧 English | 🇨🇳 中文 | 🇩🇪 Deutsch | 🇫🇷 Français | 🇮🇹 Italiano | 🇯🇵 日本語 | 🇪🇸 Español |
+
 ## [1.4.0] - 2026-03-11
 
 ### Changed
