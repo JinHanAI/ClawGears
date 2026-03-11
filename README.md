@@ -154,6 +154,42 @@
 | Mac stores **sensitive data** (work files, personal photos) | |
 | Want **regular security checks** | |
 
+### 🤖 AI Agent Usage (Easiest Way)
+
+**The simplest way: Just ask your AI assistant!**
+
+#### Option 1: Claude Code
+
+```
+帮我检查一下 OpenClaw 的安全性
+```
+
+Claude Code will automatically:
+1. Clone ClawGears repository
+2. Run security audit
+3. Explain results in plain language
+4. Offer to fix issues
+
+#### Option 2: OpenClaw with ClawHub
+
+```bash
+# Install ClawGears skill
+clawhub install clawgears-securityaudit
+```
+
+Then ask OpenClaw:
+```
+帮我做一个完整的安全审计
+```
+
+#### Option 3: Direct Clone
+
+```bash
+git clone https://github.com/JinHanAI/ClawGears.git
+cd ClawGears
+./clawgears.sh
+```
+
 ### 🎮 Interactive Menu (Recommended)
 
 ```bash
@@ -204,6 +240,105 @@ Enter your choice [1-6, H, Q]: _
 | `[4]` Interactive Fix | Auto-fix security issues | Varies |
 | `[5]` Generate Report | HTML/JSON format | ~5 sec |
 | `[6]` System Security | Firewall, FileVault, SIP | ~5 sec |
+
+---
+
+## 📸 Demo: See It In Action
+
+### Quick Security Check Output
+
+```
+========================================
+  OpenClaw Quick Security Check
+========================================
+
+[INFO] Checking OpenClaw configuration...
+
+========================================
+  Network Exposure Check
+========================================
+
+[✅ PASS] Gateway is safely bound (127.0.0.1:18789)
+[✅ PASS] No public network exposure detected
+
+========================================
+  Token Security Check
+========================================
+
+[✅ PASS] Token length is sufficient (64 characters)
+[✅ PASS] Token configuration is valid
+
+========================================
+  Command Protection Check
+========================================
+
+[✅ PASS] Sensitive commands are blocked:
+  - screencapture
+  - camerasnap
+  - osascript
+
+========================================
+  Summary
+========================================
+
+✅ All checks passed! Your OpenClaw is secure.
+```
+
+### IP Leak Detection Output
+
+```
+========================================
+  Checking openclaw.allegro.earth
+========================================
+
+Your Public IP: 45.xxx.xxx.xxx
+
+[✅ PASS] Your IP is NOT in the exposure database
+
+========================================
+  Checking Censys Database
+========================================
+
+[INFO] Censys is an internet scanning database
+
+Check your IP at:
+  🔗 https://search.censys.io/hosts/45.xxx.xxx.xxx
+
+========================================
+  Checking Shodan Database
+========================================
+
+[INFO] Shodan is another internet scanning database
+
+Check your IP at:
+  🔗 https://www.shodan.io/host/45.xxx.xxx.xxx
+
+========================================
+  Leak Check Summary
+========================================
+
+[✅ PASS] No exposure detected
+```
+
+### Issue Found & Fixed
+
+```
+========================================
+  Interactive Fix
+========================================
+
+[❌ FAIL] Gateway is exposed to public network (0.0.0.0:18789)
+
+Fix this issue? [Y/n]: Y
+
+[INFO] Rebinding Gateway to localhost...
+[INFO] Updating configuration...
+[INFO] Restarting Gateway service...
+
+[✅ PASS] Gateway is now safely bound to 127.0.0.1
+```
+
+---
 
 ### ⚡ 1-Minute Quick Check
 
