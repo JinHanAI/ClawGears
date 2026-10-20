@@ -1,282 +1,121 @@
 #!/usr/bin/env bats
-# =============================================================================
-# Test Suite for quick-check.sh
-# =============================================================================
-# Description: Unit tests for the quick security check script
-# Author: Victor.Chen
-# Version: 1.0.0
-# Created: 2026-03-10
-# =============================================================================
+load test_helper
 
-# Setup: Define script path
-SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
-QUICK_CHECK="$SCRIPT_DIR/scripts/quick-check.sh"
-
-# =============================================================================
-# Helper Functions Tests
-# =============================================================================
-
-@test "print_info outputs INFO message" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    # Mock the function to capture output
-    run print_info "Test message"
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"Test message"* ]]
+setup() {
+    setup_fixture
+    source "$PROJECT_ROOT/scripts/quick-check.sh"
 }
 
-@test "print_success outputs PASS message" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    run print_success "Test passed"
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"PASS"* ]]
-    [[ "$output" == *"Test passed"* ]]
+@test "print helpers preserve the current Chinese labels" {
+    run print_info 'Example'
+    [ "$status" -eq 0 ]; [[ "$output" == *INFO* && "$output" == *Example* ]]
+    run print_success 'Example'
+    [ "$status" -eq 0 ]; [[ "$output" == *通过* ]]
+    run print_warning 'Example'
+    [ "$status" -eq 0 ]; [[ "$output" == *警告* ]]
+    run print_error 'Example'
+    [ "$status" -eq 0 ]; [[ "$output" == *风险* ]]
+    run print_skip 'Example'
+    [ "$status" -eq 0 ]; [[ "$output" == *跳过* ]]
 }
 
-@test "print_warning outputs WARN message" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    run print_warning "Test warning"
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"WARN"* ]]
-    [[ "$output" == *"Test warning"* ]]
-}
-
-@test "print_error outputs FAIL message" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    run print_error "Test error"
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"FAIL"* ]]
-    [[ "$output" == *"Test error"* ]]
-}
-
-@test "print_skip outputs SKIP message" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    run print_skip "Test skip"
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"SKIP"* ]]
-    [[ "$output" == *"Test skip"* ]]
-}
-
-# =============================================================================
-# Network Exposure Check Tests
-# =============================================================================
-
-@test "check_network_exposure returns 0 when Gateway not running" {
-    # Mock lsof to return empty (no Gateway running)
-    mock_lsof() {
-        echo ""
-    }
-    export -f mock_lsof
-
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    # Override lsof
-    lsof() { mock_lsof; }
-    export -f lsof
-
+@test "network check handles an absent Gateway" {
+    lsof() { return 0; }
     run check_network_exposure
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"SKIP"* ]]
+    [ "$status" -eq 0 ]; [[ "$output" == *'Gateway 未运行'* ]]
 }
 
-@test "check_network_exposure fails when bound to 0.0.0.0" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    # Mock lsof to return 0.0.0.0 binding
-    lsof() {
-        echo "COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-node    12345 user   15u  IPv6 0x1234      0t0  TCP 0.0.0.0:18789 (LISTEN)"
-    }
-    export -f lsof
-
+@test "network check rejects a public binding" {
+    lsof() { echo 'node 123 user 15u IPv4 device 0t0 TCP 0.0.0.0:18789 (LISTEN)'; }
     run check_network_exposure
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"EXPOSED"* ]]
+    [ "$status" -eq 1 ]; [[ "$output" == *暴露在公网* ]]
 }
 
-@test "check_network_exposure passes when bound to localhost" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    # Mock lsof to return localhost binding
-    lsof() {
-        echo "COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-node    12345 user   15u  IPv6 0x1234      0t0  TCP 127.0.0.1:18789 (LISTEN)"
-    }
-    export -f lsof
-
+@test "network check accepts a loopback binding" {
+    lsof() { echo 'node 123 user 15u IPv4 device 0t0 TCP 127.0.0.1:18789 (LISTEN)'; }
     run check_network_exposure
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"localhost"* ]]
+    [ "$status" -eq 0 ]; [[ "$output" == *安全绑定在本地* ]]
 }
 
-# =============================================================================
-# Token Security Check Tests
-# =============================================================================
-
-@test "check_token_security skips when config not found" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    # Ensure config doesn't exist
-    rm -rf "$HOME/.openclaw/openclaw.json" 2>/dev/null || true
-
-    run check_token_security
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"SKIP"* ]]
+@test "token check handles a missing fixture config" {
+    run check_token_security "$TEST_CONFIG"
+    [ "$status" -eq 0 ]; [[ "$output" == *配置文件不存在* ]]
 }
 
-@test "check_token_security fails for short token" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    # Create mock config with short token
-    mkdir -p "$HOME/.openclaw"
-    cat > "$HOME/.openclaw/openclaw.json" << 'EOF'
-{
-    "gateway": {
-        "auth": {
-            "token": "short_token_12345"
-        },
-        "mode": "local"
-    }
-}
-EOF
-
-    run check_token_security
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"too short"* ]]
-
-    # Cleanup
-    rm -rf "$HOME/.openclaw/openclaw.json"
+@test "token check rejects a short fixture token" {
+    echo '{"gateway":{"auth":{"token":"short-example"},"mode":"local"}}' > "$TEST_CONFIG"
+    run check_token_security "$TEST_CONFIG"
+    [ "$status" -eq 1 ]; [[ "$output" == *Token\ 太短* ]]
 }
 
-@test "check_token_security passes for strong token" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    # Create mock config with strong token (64 chars)
-    mkdir -p "$HOME/.openclaw"
-    cat > "$HOME/.openclaw/openclaw.json" << 'EOF'
-{
-    "gateway": {
-        "auth": {
-            "token": "this_is_a_very_long_and_secure_token_with_more_than_64_chars_1234567890"
-        },
-        "mode": "local"
-    }
-}
-EOF
-
-    run check_token_security
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"PASS"* ]]
-
-    # Cleanup
-    rm -rf "$HOME/.openclaw/openclaw.json"
+@test "token check accepts a strong synthetic token and a quoted config path" {
+    TEST_CONFIG="$FIXTURE_DIR/config's fixture.json"
+    python3 -c 'import json,sys; json.dump({"gateway":{"auth":{"token":"x"*64},"mode":"local"}},open(sys.argv[1],"w"))' "$TEST_CONFIG"
+    run check_token_security "$TEST_CONFIG"
+    [ "$status" -eq 0 ]; [[ "$output" == *Token\ 强度足够* ]]
 }
 
-# =============================================================================
-# Deny Commands Check Tests
-# =============================================================================
-
-@test "check_deny_commands skips when config not found" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    rm -rf "$HOME/.openclaw/openclaw.json" 2>/dev/null || true
-
-    run check_deny_commands
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"SKIP"* ]]
+@test "token check rejects malformed fixture JSON" {
+    echo '{invalid' > "$TEST_CONFIG"
+    run check_token_security "$TEST_CONFIG"
+    [ "$status" -eq 1 ]; [[ "$output" == *无法读取配置* ]]
 }
 
-@test "check_deny_commands fails when critical commands not denied" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    mkdir -p "$HOME/.openclaw"
-    cat > "$HOME/.openclaw/openclaw.json" << 'EOF'
-{
-    "gateway": {
-        "nodes": {
-            "denyCommands": []
-        }
-    }
-}
-EOF
-
-    run check_deny_commands
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"Missing"* ]]
-
-    rm -rf "$HOME/.openclaw/openclaw.json"
+@test "deny commands handles a missing fixture config" {
+    run check_deny_commands "$TEST_CONFIG"
+    [ "$status" -eq 0 ]; [[ "$output" == *配置文件不存在* ]]
 }
 
-@test "check_deny_commands passes when all critical commands denied" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    mkdir -p "$HOME/.openclaw"
-    cat > "$HOME/.openclaw/openclaw.json" << 'EOF'
-{
-    "gateway": {
-        "nodes": {
-            "denyCommands": ["camera.snap", "camera.clip", "screen.record", "contacts.add"]
-        }
-    }
-}
-EOF
-
-    run check_deny_commands
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"PASS"* ]]
-
-    rm -rf "$HOME/.openclaw/openclaw.json"
+@test "deny commands reports missing critical commands" {
+    echo '{"gateway":{"nodes":{"denyCommands":[]}}}' > "$TEST_CONFIG"
+    run check_deny_commands "$TEST_CONFIG"
+    [ "$status" -eq 1 ]; [[ "$output" == *敏感命令未被阻止* ]]
 }
 
-# =============================================================================
-# Firewall Check Tests
-# =============================================================================
+@test "deny commands accepts every command required by the checker" {
+    echo '{"gateway":{"nodes":{"denyCommands":["screencapture","camera.snap","camera.clip","screen.record","osascript"]}}}' > "$TEST_CONFIG"
+    run check_deny_commands "$TEST_CONFIG"
+    [ "$status" -eq 0 ]; [[ "$output" == *所有敏感命令已阻止* ]]
+}
 
-@test "check_firewall passes when firewall enabled" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    # Mock socketfilterfw
-    socketfilterfw() {
-        echo "enabled"
-    }
-    export -f socketfilterfw
-
+@test "firewall check reads an enabled fixture instead of the host" {
+    get_firewall_status() { echo 'Firewall is enabled. (State = 1)'; }
     run check_firewall
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"enabled"* ]]
+    [ "$status" -eq 0 ]; [[ "$output" == *防火墙已开启* ]]
 }
 
-@test "check_firewall fails when firewall disabled" {
-    source "$SCRIPT_DIR/scripts/quick-check.sh"
-
-    socketfilterfw() {
-        echo "disabled"
-    }
-    export -f socketfilterfw
-
+@test "disabled firewall retains its optional warning status" {
+    get_firewall_status() { echo 'Firewall is disabled. (State = 0)'; }
     run check_firewall
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"DISABLED"* ]]
+    [ "$status" -eq 2 ]; [[ "$output" == *防火墙未开启* ]]
 }
 
-# =============================================================================
-# Script Execution Tests
-# =============================================================================
-
-@test "quick-check.sh is executable" {
-    [ -x "$QUICK_CHECK" ]
+@test "quick main finishes its summary after nonzero check results under errexit" {
+    export PROJECT_ROOT
+    run bash -e -c '
+        source "$PROJECT_ROOT/scripts/quick-check.sh"
+        check_network_exposure() { echo network; return 1; }
+        check_token_security() { echo token; return 1; }
+        check_deny_commands() { echo commands; return 1; }
+        check_fda_permission() { echo permissions; return 2; }
+        check_firewall() { echo firewall; return 2; }
+        main
+    '
+    [ "$status" -eq 0 ]
+    [[ "$output" == *firewall* && "$output" == *检查摘要* && "$output" == *2\ 个高风险项* ]]
 }
 
-@test "quick-check.sh runs without syntax errors" {
-    bash -n "$QUICK_CHECK"
+@test "quick script is executable and has valid Bash syntax" {
+    [ -x "$PROJECT_ROOT/scripts/quick-check.sh" ]
+    bash -n "$PROJECT_ROOT/scripts/quick-check.sh"
 }
 
-@test "quick-check.sh shows help with -h flag" {
-    run bash "$QUICK_CHECK" -h 2>&1 || true
-    # Script may exit 1 for unknown option, but shouldn't crash
-    [ "$status" -le 1 ]
+@test "quick CLI help exits successfully without running checks" {
+    run bash "$PROJECT_ROOT/scripts/quick-check.sh" -h
+    [ "$status" -eq 0 ]; [[ "$output" == *Usage:* && "$output" != *检查摘要* ]]
+}
+
+@test "quick CLI rejects unknown options" {
+    run bash "$PROJECT_ROOT/scripts/quick-check.sh" --invalid
+    [ "$status" -eq 1 ]; [[ "$output" == *'Unknown option'* ]]
 }

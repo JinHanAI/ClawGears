@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Guard the quick check, IP check and report CLI entrypoints so importing their functions does not execute audits, parse caller arguments or exit the caller.
+- Isolate Bats fixtures from the real OpenClaw configuration, network services and host permissions; validate complete synthetic HTML/JSON reports.
+- Handle expected nonzero check results and counters correctly under `set -e`, including failed test suites, IP provider fallback and wildcard port listeners.
+- Keep the retired hosted security audit absent; CI runs only on pushes and pull requests.
+
 ## [1.5.0] - 2026-03-11
 
 ### Added

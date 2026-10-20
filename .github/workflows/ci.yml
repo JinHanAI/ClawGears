@@ -40,7 +40,7 @@ jobs:
               echo "✅ OK"
             else
               echo "❌ SYNTAX ERROR"
-              ((ERROR_COUNT++))
+              ((ERROR_COUNT+=1))
             fi
           done
 
@@ -91,7 +91,7 @@ jobs:
           for test_file in tests/*.bats; do
             if [ -f "$test_file" ]; then
               echo "✅ Found: $test_file"
-              ((TEST_COUNT++))
+              ((TEST_COUNT+=1))
             fi
           done
 
@@ -104,42 +104,7 @@ jobs:
           fi
 
       - name: Run Tests
-        run: |
-          echo "🧪 Running test suite..."
-          echo ""
-
-          # Run tests with summary
-          PASSED=0
-          FAILED=0
-
-          for test_file in tests/*.bats; do
-            test_name=$(basename "$test_file" .bats)
-            echo "----------------------------------------"
-            echo "Running: $test_name"
-            echo "----------------------------------------"
-
-            if bats "$test_file"; then
-              ((PASSED++))
-            else
-              ((FAILED++))
-            fi
-            echo ""
-          done
-
-          echo "========================================"
-          echo "  Test Summary"
-          echo "========================================"
-          echo ""
-          echo "Passed: $PASSED"
-          echo "Failed: $FAILED"
-          echo ""
-
-          if [ $FAILED -gt 0 ]; then
-            echo "❌ Some tests failed"
-            exit 1
-          else
-            echo "✅ All tests passed"
-          fi
+        run: ./tests/run-tests.sh
 
       - name: Upload Test Results
         if: always()
@@ -159,34 +124,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Test Report Generation
-        run: |
-          echo "📊 Testing report generation..."
-          echo ""
-
-          # Create output directory
-          mkdir -p ./test-output
-
-          # Test HTML report generation
-          echo "Testing HTML report..."
-          if ./scripts/generate-report.sh --format html --output ./test-output 2>/dev/null; then
-            echo "✅ HTML report generated successfully"
-          else
-            echo "⚠️ HTML report generation had issues (may be expected in CI)"
-          fi
-
-          # Test JSON report generation
-          echo "Testing JSON report..."
-          if ./scripts/generate-report.sh --format json --output ./test-output 2>/dev/null; then
-            echo "✅ JSON report generated successfully"
-          else
-            echo "⚠️ JSON report generation had issues (may be expected in CI)"
-          fi
-
-          # List generated files
-          echo ""
-          echo "Generated files:"
-          ls -la ./test-output/ 2>/dev/null || echo "No files generated"
+      - name: Test Synthetic Report Generation
+        run: bash tests/report-smoke.sh
 
       - name: Verify Project Structure
         run: |
@@ -211,7 +150,7 @@ jobs:
               echo "✅ $file"
             else
               echo "❌ $file (missing)"
-              ((MISSING++))
+              ((MISSING+=1))
             fi
           done
 

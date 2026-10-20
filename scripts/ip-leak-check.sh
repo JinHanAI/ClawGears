@@ -8,8 +8,6 @@
 # Created: 2026-03-10
 # =============================================================================
 
-set -e
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[32m'
@@ -19,7 +17,7 @@ NC='\033[0m'
 
 # Configuration
 ALLEGRO_URL="https://openclaw.allegro.earth"
-HISTORY_DIR="$(dirname "$0")/../history"
+HISTORY_DIR="$(dirname "${BASH_SOURCE[0]}")/../history"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # =============================================================================
@@ -51,21 +49,21 @@ get_public_ip() {
     local ip=""
 
     # Method 1: ipify
-    ip=$(curl -s https://api.ipify.org 2>/dev/null)
+    ip=$(curl -s https://api.ipify.org 2>/dev/null || true)
     if [ -n "$ip" ]; then
         echo "$ip"
         return
     fi
 
     # Method 2: icanhazip
-    ip=$(curl -s https://icanhazip.com 2>/dev/null)
+    ip=$(curl -s https://icanhazip.com 2>/dev/null || true)
     if [ -n "$ip" ]; then
         echo "$ip"
         return
     fi
 
     # Method 3: ifconfig.me
-    ip=$(curl -s https://ifconfig.me/ip 2>/dev/null)
+    ip=$(curl -s https://ifconfig.me/ip 2>/dev/null || true)
     if [ -n "$ip" ]; then
         echo "$ip"
         return
@@ -156,12 +154,12 @@ check_port_exposure() {
 
     # Check common OpenClaw ports
     local ports=(18789 8080 3000 5000)
-    local exposed_ports=()
+    local exposed_ports=""
 
     for port in "${ports[@]}"; do
         local listener=$(lsof -i :$port 2>/dev/null | grep LISTEN || true)
         if [ -n "$listener" ]; then
-            local bind_addr=$(echo "$listener" | awk '{print $NF}' | head -1)
+            local bind_addr=$(echo "$listener" | awk '{print $(NF-1)}' | head -1)
             if echo "$bind_addr" | grep -q "0.0.0.0\|\*"; then
                 exposed_ports="$exposed_ports $port"
                 print_error "Port $port is exposed (0.0.0.0)"
@@ -299,100 +297,107 @@ show_usage() {
     echo "  $0 --ports"
 }
 
-# Parse arguments
-CHECK_IP=""
-CHECK_PORTS=false
-CHECK_ALL=false
+main() {
+    # Parse arguments only when invoked, never while sourcing helpers.
+    CHECK_IP=""
+    CHECK_PORTS=false
+    CHECK_ALL=false
 
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --ip)
-            CHECK_IP="$2"
-            shift 2
-            ;;
-        --ports)
-            CHECK_PORTS=true
-            shift
-            ;;
-        --all)
-            CHECK_ALL=true
-            shift
-            ;;
-        -h|--help)
-            show_usage
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            show_usage
-            exit 1
-            ;;
-    esac
-done
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --ip)
+                CHECK_IP="$2"
+                shift 2
+                ;;
+            --ports)
+                CHECK_PORTS=true
+                shift
+                ;;
+            --all)
+                CHECK_ALL=true
+                shift
+                ;;
+            -h|--help)
+                show_usage
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
 
-# Default to all checks if no specific option
-if [ "$CHECK_IP" = "" ] && [ "$CHECK_PORTS" = false ]; then
-    CHECK_ALL=true
-fi
-
-echo "========================================"
-echo "  OpenClaw IP Leak Check"
-echo "========================================"
-echo ""
-
-ERRORS=0
-
-# Get public IP
-if [ "$CHECK_IP" = "" ]; then
-    CHECK_IP=$(get_public_ip)
-fi
-
-# Run checks
-if [ "$CHECK_ALL" = true ] || [ -n "$CHECK_IP" ]; then
-    check_allegro_exposure "$CHECK_IP"
-    RESULT=$?
-    if [ $RESULT -ne 0 ]; then
-        ((ERRORS++))
+    # Default to all checks if no specific option
+    if [ "$CHECK_IP" = "" ] && [ "$CHECK_PORTS" = false ]; then
+        CHECK_ALL=true
     fi
-    echo ""
-    check_censys_exposure "$CHECK_IP"
-    echo ""
-    check_shodan_exposure "$CHECK_IP"
-    echo ""
-fi
 
-if [ "$CHECK_ALL" = true ] || [ "$CHECK_PORTS" = true ]; then
-    check_port_exposure
-    RESULT=$?
-    if [ $RESULT -ne 0 ]; then
-        ((ERRORS++))
+    echo "========================================"
+    echo "  OpenClaw IP Leak Check"
+    echo "========================================"
+    echo ""
+
+    ERRORS=0
+
+    # Get public IP
+    if [ "$CHECK_IP" = "" ]; then
+        CHECK_IP=$(get_public_ip)
     fi
-    echo ""
-fi
-# Save result
-save_leak_check_result "$CHECK_IP" "$ERRORS"
 
-# Summary
-echo "========================================"
-echo "  Leak Check Summary"
-echo "========================================"
-echo ""
+    # Run checks
+    if [ "$CHECK_ALL" = true ] || [ -n "$CHECK_IP" ]; then
+        RESULT=0
+        check_allegro_exposure "$CHECK_IP" || RESULT=$?
+        if [ $RESULT -ne 0 ]; then
+            ((ERRORS+=1))
+        fi
+        echo ""
+        check_censys_exposure "$CHECK_IP"
+        echo ""
+        check_shodan_exposure "$CHECK_IP"
+        echo ""
+    fi
 
-if [ $ERRORS -gt 0 ]; then
-    print_error "Found $ERRORS exposure(s)!"
+    if [ "$CHECK_ALL" = true ] || [ "$CHECK_PORTS" = true ]; then
+        RESULT=0
+        check_port_exposure || RESULT=$?
+        if [ $RESULT -ne 0 ]; then
+            ((ERRORS+=1))
+        fi
+        echo ""
+    fi
+    # Save result
+    save_leak_check_result "$CHECK_IP" "$ERRORS"
+
+    # Summary
+    echo "========================================"
+    echo "  Leak Check Summary"
+    echo "========================================"
     echo ""
-    echo "🚨 IMMEDIATE ACTION REQUIRED"
-    echo ""
-    echo "1. Close public access: Change Gateway bind to loopback"
-    echo "2. Enable authentication: Add strong token"
-    echo "3. Regenerate keys: Create new API keys"
-    echo "4. Check usage: Review API usage logs"
-    echo ""
-    echo "Run fix: ./scripts/fix-exposed-gateway.sh --all"
-    exit 1
-else
-    print_success "No exposure detected"
-    echo ""
-    echo "Continue to monitor regularly and maintain security best practices."
-    exit 0
+
+    if [ $ERRORS -gt 0 ]; then
+        print_error "Found $ERRORS exposure(s)!"
+        echo ""
+        echo "🚨 IMMEDIATE ACTION REQUIRED"
+        echo ""
+        echo "1. Close public access: Change Gateway bind to loopback"
+        echo "2. Enable authentication: Add strong token"
+        echo "3. Regenerate keys: Create new API keys"
+        echo "4. Check usage: Review API usage logs"
+        echo ""
+        echo "Run fix: ./scripts/fix-exposed-gateway.sh --all"
+        exit 1
+    else
+        print_success "No exposure detected"
+        echo ""
+        echo "Continue to monitor regularly and maintain security best practices."
+        exit 0
+    fi
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    set -e
+    main "$@"
 fi
