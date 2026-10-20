@@ -8,8 +8,6 @@
 # Created: 2026-03-10
 # =============================================================================
 
-set -e
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[32m'
@@ -84,19 +82,19 @@ check_token_security() {
     local result="PASS"
     local details=""
 
-    local config_path="$HOME/.openclaw/openclaw.json"
+    local config_path="${1:-$HOME/.openclaw/openclaw.json}"
     if [ ! -f "$config_path" ]; then
         echo "SKIP|Config file not found"
         return
     fi
 
     local token_info=$(python3 -c "
-import json
-with open('$config_path') as f:
+import json, sys
+with open(sys.argv[1]) as f:
     cfg = json.load(f)
     token = cfg.get('gateway', {}).get('auth', {}).get('token', '')
     print(f'{len(token)}|{cfg.get(\"gateway\", {}).get(\"mode\", \"local\")}|{cfg.get(\"gateway\", {}).get(\"bind\", \"loopback\")}')
-" 2>/dev/null)
+" "$config_path" 2>/dev/null)
 
     local token_length=$(echo "$token_info" | cut -d'|' -f1)
     local mode=$(echo "$token_info" | cut -d'|' -f2)
@@ -123,19 +121,19 @@ check_deny_commands() {
     local result="PASS"
     local details=""
 
-    local config_path="$HOME/.openclaw/openclaw.json"
+    local config_path="${1:-$HOME/.openclaw/openclaw.json}"
     if [ ! -f "$config_path" ]; then
         echo "SKIP|Config file not found"
         return
     fi
 
     local deny_list=$(python3 -c "
-import json
-with open('$config_path') as f:
+import json, sys
+with open(sys.argv[1]) as f:
     cfg = json.load(f)
     deny = cfg.get('gateway', {}).get('nodes', {}).get('denyCommands', [])
     print('|'.join(deny) if deny else '')
-" 2>/dev/null)
+" "$config_path" 2>/dev/null)
 
     local required_deny=("camera.snap|camera.clip|screen.record|contacts.add|reminders.add")
 
@@ -306,15 +304,15 @@ EOF
     echo "<div id='results'>" >> "$report_file"
 
     for check_func in check_network_exposure check_token_security check_deny_commands check_tcc_permissions check_icloud_sync check_workspace_privacy check_network_connections check_logs; do
-        local check_name=$(echo "$check_func" | sed 's/check_/g' | sed 's/_/ /g')
+        local check_name=$(echo "$check_func" | sed 's/^check_//' | sed 's/_/ /g')
         local result=$($check_func)
         local status=$(echo "$result" | cut -d'|' -f1)
         local details=$(echo "$result" | cut -d'|' -f2-)
 
         case $status in
-            PASS) ((pass_count++)); css_class="pass" ;;
-            FAIL) ((fail_count++)); css_class="fail" ;;
-            WARN) ((warn_count++)); css_class="warn" ;;
+            PASS) ((pass_count+=1)); css_class="pass" ;;
+            FAIL) ((fail_count+=1)); css_class="fail" ;;
+            WARN) ((warn_count+=1)); css_class="warn" ;;
             SKIP) css_class="skip" ;;
         esac
 
@@ -360,10 +358,10 @@ generate_json_report() {
         checks_json="${checks_json}\"$check_name\": {\"status\": \"$status\", \"details\": \"$details\"}"
 
         case $status in
-            PASS) ((pass_count++)) ;;
-            FAIL) ((fail_count++)) ;;
-            WARN) ((warn_count++)) ;;
-            SKIP) ((skip_count++)) ;;
+            PASS) ((pass_count+=1)) ;;
+            FAIL) ((fail_count+=1)) ;;
+            WARN) ((warn_count+=1)) ;;
+            SKIP) ((skip_count+=1)) ;;
         esac
     done
 
@@ -391,50 +389,57 @@ EOF
 # Main
 # =============================================================================
 
-# Parse arguments
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        -f|--format)
-            OUTPUT_FORMAT="$2"
-            shift 2
-            ;;
-        -o|--output)
-            OUTPUT_DIR="$2"
-            shift 2
-            ;;
-        -q|--quick)
-            QUICK_MODE=true
-            shift
-            ;;
-        -h|--help)
-            show_usage
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            show_usage
-            exit 1
-            ;;
-    esac
-done
+main() {
+    # Parse arguments only when invoked, never while sourcing helpers.
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -f|--format)
+                OUTPUT_FORMAT="$2"
+                shift 2
+                ;;
+            -o|--output)
+                OUTPUT_DIR="$2"
+                shift 2
+                ;;
+            -q|--quick)
+                QUICK_MODE=true
+                shift
+                ;;
+            -h|--help)
+                show_usage
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
 
-# Create output directory
-mkdir -p "$OUTPUT_DIR"
+    # Create output directory
+    mkdir -p "$OUTPUT_DIR"
 
-# Generate report
-echo "========================================"
-echo "  OpenClaw Security Audit Report Generator"
-echo "========================================"
-echo ""
-echo "Format: $OUTPUT_FORMAT"
-echo "Output: $OUTPUT_DIR"
-echo ""
+    # Generate report
+    echo "========================================"
+    echo "  OpenClaw Security Audit Report Generator"
+    echo "========================================"
+    echo ""
+    echo "Format: $OUTPUT_FORMAT"
+    echo "Output: $OUTPUT_DIR"
+    echo ""
 
-if [ "$OUTPUT_FORMAT" = "html" ]; then
-    generate_html_report
-else
-    generate_json_report
+    if [ "$OUTPUT_FORMAT" = "html" ]; then
+        generate_html_report
+    else
+        generate_json_report
+    fi
+
+    echo ""
+    print_success "Report generation complete!"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    set -e
+    main "$@"
 fi
-
-echo ""
-print_success "Report generation complete!"

@@ -75,10 +75,10 @@ run_all_tests() {
             echo "----------------------------------------"
 
             if bats "$test_file"; then
-                ((total_passed++))
+                ((total_passed+=1))
                 print_success "$test_name passed"
             else
-                ((total_failed++))
+                ((total_failed+=1))
                 print_error "$test_name failed"
             fi
             echo ""

@@ -1,158 +1,107 @@
 #!/usr/bin/env bats
-# =============================================================================
-# Test Suite for ip-leak-check.sh
-# =============================================================================
-# Description: Unit tests for the IP leak check script
-# Author: Victor.Chen
-# Version: 1.0.0
-# Created: 2026-03-10
-# =============================================================================
+load test_helper
 
-SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
-IP_LEAK_CHECK="$SCRIPT_DIR/scripts/ip-leak-check.sh"
+setup() {
+    setup_fixture
+    source "$PROJECT_ROOT/scripts/ip-leak-check.sh"
+    HISTORY_DIR="$FIXTURE_DIR/history"
+    curl() {
+        case "$*" in
+            *api.ipify.org*) echo '203.0.113.10' ;;
+            *'/api/check?'*) echo '{"exposed":false}' ;;
+            *) return 1 ;;
+        esac
+    }
+    lsof() { return 0; }
+}
 
-# =============================================================================
-# Argument Parsing Tests
-# =============================================================================
+@test "IP CLI help accepts both help flags without probing" {
+    for flag in -h --help; do
+        run bash "$PROJECT_ROOT/scripts/ip-leak-check.sh" "$flag"
+        [ "$status" -eq 0 ]; [[ "$output" == *Usage:* ]]
+    done
+}
 
-@test "ip-leak-check.sh shows help with -h flag" {
-    run bash "$IP_LEAK_CHECK" -h
+@test "IP main accepts a specific synthetic address" {
+    run main --ip 203.0.113.10
     [ "$status" -eq 0 ]
-    [[ "$output" == *"Usage"* ]]
+    [[ "$output" == *203.0.113.10* && "$output" == *'Leak Check Summary'* ]]
+    [ -f "$HISTORY_DIR/leak-check-$TIMESTAMP.json" ]
 }
 
-@test "ip-leak-check.sh shows help with --help flag" {
-    run bash "$IP_LEAK_CHECK" --help
+@test "IP main accepts the ports flag with mocked probes" {
+    run main --ports
+    [ "$status" -eq 0 ]; [[ "$output" == *'Checking Port Exposure'* ]]
+}
+
+@test "IP main runs all checks using fixtures" {
+    run main --all
     [ "$status" -eq 0 ]
-    [[ "$output" == *"Usage"* ]]
+    [[ "$output" == *Censys* && "$output" == *Shodan* && "$output" == *'Checking Port Exposure'* ]]
 }
 
-@test "ip-leak-check.sh accepts --ip flag" {
-    run bash "$IP_LEAK_CHECK" --ip 8.8.8.8
-    # Should accept IP and run check
-    [[ "$output" == *"8.8.8.8"* ]] || [[ "$output" == *"Checking"* ]]
+@test "IP script is executable and has valid Bash syntax" {
+    [ -x "$PROJECT_ROOT/scripts/ip-leak-check.sh" ]
+    bash -n "$PROJECT_ROOT/scripts/ip-leak-check.sh"
 }
 
-@test "ip-leak-check.sh accepts --ports flag" {
-    run bash "$IP_LEAK_CHECK" --ports
-    [[ "$output" == *"Port"* ]] || [[ "$output" == *"Checking"* ]]
-}
-
-@test "ip-leak-check.sh accepts --all flag" {
-    run bash "$IP_LEAK_CHECK" --all
-    # Should run all checks
-    [ "$status" -le 1 ]  # May pass or fail, but shouldn't crash
-}
-
-# =============================================================================
-# Script Validation Tests
-# =============================================================================
-
-@test "ip-leak-check.sh is executable" {
-    [ -x "$IP_LEAK_CHECK" ]
-}
-
-@test "ip-leak-check.sh has no syntax errors" {
-    bash -n "$IP_LEAK_CHECK"
-}
-
-# =============================================================================
-# IP Detection Tests
-# =============================================================================
-
-@test "get_public_ip returns non-empty value" {
-    source "$SCRIPT_DIR/scripts/ip-leak-check.sh"
-
+@test "public IP discovery returns the mocked address" {
     run get_public_ip
-    [ -n "$output" ]
-    [[ "$output" != "unknown" ]] || skip "Network not available"
+    [ "$status" -eq 0 ]; [ "$output" = 203.0.113.10 ]
 }
 
-@test "get_public_ip returns valid IP format" {
-    source "$SCRIPT_DIR/scripts/ip-leak-check.sh"
-
-    ip=$(get_public_ip)
-
-    if [ "$ip" != "unknown" ]; then
-        # Basic IP format validation
-        [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]
-    fi
+@test "public IP discovery falls back after a failed provider" {
+    curl() { [[ "$*" == *icanhazip.com* ]] && echo '198.51.100.10'; }
+    export -f curl
+    run bash -e -c 'source "$1"; get_public_ip' _ "$PROJECT_ROOT/scripts/ip-leak-check.sh"
+    [ "$status" -eq 0 ]; [ "$output" = 198.51.100.10 ]
 }
 
-# =============================================================================
-# Port Exposure Tests
-# =============================================================================
+@test "public IP discovery reports unknown when every provider fails" {
+    curl() { return 1; }
+    export -f curl
+    run bash -e -c 'source "$1"; get_public_ip' _ "$PROJECT_ROOT/scripts/ip-leak-check.sh"
+    [ "$status" -eq 0 ]; [ "$output" = unknown ]
+}
 
-@test "check_port_exposure runs without error" {
-    source "$SCRIPT_DIR/scripts/ip-leak-check.sh"
-
+@test "port check accepts no listeners" {
     run check_port_exposure
-    [ "$status" -le 1 ]  # May pass or fail
+    [ "$status" -eq 0 ]
 }
 
-@test "check_port_exposure checks standard ports" {
-    source "$SCRIPT_DIR/scripts/ip-leak-check.sh"
-
-    # Should check ports 18789, 8080, 3000, 5000
-    output=$(check_port_exposure 2>&1)
-
-    [[ "$output" == *"18789"* ]] || [[ "$output" == *"8080"* ]] || [[ "$output" == *"Port"* ]]
+@test "port check rejects wildcard listeners" {
+    lsof() { echo 'node 123 user 15u IPv4 device 0t0 TCP *:18789 (LISTEN)'; }
+    run check_port_exposure
+    [ "$status" -eq 1 ]; [[ "$output" == *'EXPOSED PORTS'* ]]
 }
 
-# =============================================================================
-# Result Saving Tests
-# =============================================================================
-
-@test "save_leak_check_result creates JSON file" {
-    source "$SCRIPT_DIR/scripts/ip-leak-check.sh"
-
-    HISTORY_DIR="/tmp/test-history-$$"
-    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-
-    run save_leak_check_result "1.2.3.4" "0"
-
-    if [ -d "$HISTORY_DIR" ]; then
-        [ -f "$HISTORY_DIR/leak-check-$TIMESTAMP.json" ] || [ -f "$HISTORY_DIR"/*.json ]
-        rm -rf "$HISTORY_DIR"
-    fi
+@test "port check accepts loopback listeners" {
+    lsof() { echo 'node 123 user 15u IPv4 device 0t0 TCP 127.0.0.1:18789 (LISTEN)'; }
+    run check_port_exposure
+    [ "$status" -eq 0 ]; [[ "$output" == *'safely bound'* ]]
 }
 
-@test "saved result contains required fields" {
-    source "$SCRIPT_DIR/scripts/ip-leak-check.sh"
-
-    HISTORY_DIR="/tmp/test-history-$$"
-    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-
-    save_leak_check_result "1.2.3.4" "0"
-
-    JSON_FILE=$(ls "$HISTORY_DIR"/*.json 2>/dev/null | head -1)
-
-    if [ -n "$JSON_FILE" ]; then
-        grep -q "timestamp" "$JSON_FILE"
-        grep -q "public_ip" "$JSON_FILE"
-        grep -q "exposed" "$JSON_FILE"
-        rm -rf "$HISTORY_DIR"
-    fi
+@test "saved result is parseable JSON in the test directory" {
+    run save_leak_check_result 203.0.113.10 0
+    [ "$status" -eq 0 ]
+    python3 -c 'import json,sys; x=json.load(open(sys.argv[1])); assert x["public_ip"]=="203.0.113.10"; assert x["exposed"]==0; assert x["timestamp"]; assert x["ports_checked"]==[18789,8080,3000,5000]' "$HISTORY_DIR/leak-check-$TIMESTAMP.json"
 }
 
-# =============================================================================
-# Integration Tests
-# =============================================================================
-
-@test "Full IP leak check runs end-to-end" {
-    run bash "$IP_LEAK_CHECK" --ip 192.168.1.1 --ports
-
-    # Should complete without crashing
-    [ "$status" -le 1 ]
+@test "IP main saves history and exits nonzero when exposure is detected" {
+    run bash -e -c '
+        source "$1"
+        HISTORY_DIR=$2
+        check_allegro_exposure() { return 1; }
+        main --ip 203.0.113.10
+    ' _ "$PROJECT_ROOT/scripts/ip-leak-check.sh" "$HISTORY_DIR"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *'Found 1 exposure(s)'* && "$output" == *'Leak Check Summary'* ]]
+    files=("$HISTORY_DIR/"*.json)
+    [ "${#files[@]}" -eq 1 ]
+    python3 -c 'import json,sys; assert json.load(open(sys.argv[1]))["exposed"]==1' "${files[0]}"
 }
 
-@test "Leak check saves history when run" {
-    OUTPUT_DIR="/tmp/test-history-$$"
-
-    # Run with specific IP to avoid network dependency
-    bash "$IP_LEAK_CHECK" --ip 10.0.0.1 2>&1 || true
-
-    # History should be created in script's history directory
-    # (may not exist if check fails early)
-    rm -rf "$OUTPUT_DIR" 2>/dev/null || true
+@test "IP CLI rejects an unknown option" {
+    run bash "$PROJECT_ROOT/scripts/ip-leak-check.sh" --invalid
+    [ "$status" -eq 1 ]
 }

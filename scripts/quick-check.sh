@@ -8,8 +8,6 @@
 # Created: 2026-03-10
 # =============================================================================
 
-set -e
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[32m'
@@ -108,7 +106,7 @@ check_token_security() {
     echo "========================================"
     echo ""
 
-    local config_path="$HOME/.openclaw/openclaw.json"
+    local config_path="${1:-$HOME/.openclaw/openclaw.json}"
 
     echo "📌 这个检查项的作用:"
     echo "   检查 API Token 强度，防止被暴力破解或猜测"
@@ -122,16 +120,16 @@ check_token_security() {
     fi
 
     local token_info=$(python3 -c "
-import json
+import json, sys
 try:
-    with open('$config_path') as f:
+    with open(sys.argv[1]) as f:
         cfg = json.load(f)
         token = cfg.get('gateway', {}).get('auth', {}).get('token', '')
         mode = cfg.get('gateway', {}).get('mode', 'unknown')
         print(f'{len(token)}|{mode}')
 except:
     print('error|error')
-" 2>/dev/null)
+" "$config_path" 2>/dev/null)
 
     local token_length=$(echo "$token_info" | cut -d'|' -f1)
     local mode=$(echo "$token_info" | cut -d'|' -f2)
@@ -188,7 +186,7 @@ check_deny_commands() {
     echo "========================================"
     echo ""
 
-    local config_path="$HOME/.openclaw/openclaw.json"
+    local config_path="${1:-$HOME/.openclaw/openclaw.json}"
 
     echo "📌 这个检查项的作用:"
     echo "   检查是否阻止了摄像头、屏幕截图等敏感操作，防止隐私泄露"
@@ -200,15 +198,15 @@ check_deny_commands() {
     fi
 
     local deny_list=$(python3 -c "
-import json
+import json, sys
 try:
-    with open('$config_path') as f:
+    with open(sys.argv[1]) as f:
         cfg = json.load(f)
         deny = cfg.get('gateway', {}).get('nodes', {}).get('denyCommands', [])
         print('|'.join(deny) if deny else '')
 except:
     print('')
-" 2>/dev/null)
+" "$config_path" 2>/dev/null)
 
     echo "当前已阻止的命令: ${deny_list:-无}"
     echo ""
@@ -312,6 +310,10 @@ except:
     esac
 }
 
+get_firewall_status() {
+    /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
+}
+
 check_firewall() {
     echo ""
     echo "========================================"
@@ -323,12 +325,12 @@ check_firewall() {
     echo "   检查 macOS 防火墙是否开启，阻止未授权的网络连接"
     echo ""
 
-    local fw_status=$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate 2>/dev/null)
+    local fw_status=$(get_firewall_status 2>/dev/null)
 
     echo "防火墙状态: $fw_status"
     echo ""
 
-    if [ "$fw_status" = "enabled" ]; then
+    if [ "$fw_status" = "enabled" ] || [[ "$fw_status" == *"Firewall is enabled"* ]]; then
         print_success "防火墙已开启"
         echo ""
         echo "✅ 您的 Mac 受到防火墙保护"
@@ -377,80 +379,87 @@ show_usage() {
     echo "  5. Firewall status"
 }
 
-# Parse arguments
-VERBOSE=false
-JSON_OUTPUT=false
+main() {
+    # Parse arguments only when invoked, never while sourcing helpers.
+    VERBOSE=false
+    JSON_OUTPUT=false
 
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --verbose)
-            VERBOSE=true
-            shift
-            ;;
-        --json)
-            JSON_OUTPUT=true
-            shift
-            ;;
-        -h|--help)
-            show_usage
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            show_usage
-            exit 1
-            ;;
-    esac
-done
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --verbose)
+                VERBOSE=true
+                shift
+                ;;
+            --json)
+                JSON_OUTPUT=true
+                shift
+                ;;
+            -h|--help)
+                show_usage
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
 
-echo "========================================"
-echo "  OpenClaw 快速安全检查"
-echo "========================================"
+    echo "========================================"
+    echo "  OpenClaw 快速安全检查"
+    echo "========================================"
 
-ERRORS=0
-WARNINGS=0
+    ERRORS=0
+    WARNINGS=0
 
-# Run checks
-check_network_exposure
-RESULT=$?
-if [ $RESULT -eq 1 ]; then ((ERRORS++)); fi
+    # Run checks
+    RESULT=0
+    check_network_exposure || RESULT=$?
+    if [ $RESULT -eq 1 ]; then ((ERRORS+=1)); fi
 
-check_token_security
-RESULT=$?
-if [ $RESULT -eq 1 ]; then ((ERRORS++)); fi
-if [ $RESULT -eq 2 ]; then ((WARNINGS++)); fi
+    RESULT=0
+    check_token_security || RESULT=$?
+    if [ $RESULT -eq 1 ]; then ((ERRORS+=1)); fi
+    if [ $RESULT -eq 2 ]; then ((WARNINGS+=1)); fi
 
-check_deny_commands
-RESULT=$?
-if [ $RESULT -eq 1 ]; then ((WARNINGS++)); fi
+    RESULT=0
+    check_deny_commands || RESULT=$?
+    if [ $RESULT -eq 1 ]; then ((WARNINGS+=1)); fi
 
-check_fda_permission
-RESULT=$?
-if [ $RESULT -eq 1 ]; then ((WARNINGS++)); fi
+    RESULT=0
+    check_fda_permission || RESULT=$?
+    if [ $RESULT -eq 1 ]; then ((WARNINGS+=1)); fi
 
-check_firewall
-RESULT=$?
-if [ $RESULT -eq 2 ]; then ((WARNINGS++)); fi
+    RESULT=0
+    check_firewall || RESULT=$?
+    if [ $RESULT -eq 2 ]; then ((WARNINGS+=1)); fi
 
-# Summary
-echo ""
-echo "========================================"
-echo "  检查摘要"
-echo "========================================"
-echo ""
-
-if [ $ERRORS -gt 0 ]; then
-    print_error "发现 $ERRORS 个高风险项需要处理"
+    # Summary
     echo ""
-    echo "🚨 建议立即运行: ./scripts/interactive-fix.sh --all"
-elif [ $WARNINGS -gt 0 ]; then
-    print_warning "发现 $WARNINGS 个建议关注的项"
+    echo "========================================"
+    echo "  检查摘要"
+    echo "========================================"
     echo ""
-    echo "📋 请根据您的实际使用场景决定是否需要修复"
-else
-    print_success "所有检查项均通过！"
+
+    if [ $ERRORS -gt 0 ]; then
+        print_error "发现 $ERRORS 个高风险项需要处理"
+        echo ""
+        echo "🚨 建议立即运行: ./scripts/interactive-fix.sh --all"
+    elif [ $WARNINGS -gt 0 ]; then
+        print_warning "发现 $WARNINGS 个建议关注的项"
+        echo ""
+        echo "📋 请根据您的实际使用场景决定是否需要修复"
+    else
+        print_success "所有检查项均通过！"
+        echo ""
+        echo "✅ 您的 OpenClaw 配置是安全的"
+    fi
+
     echo ""
-    echo "✅ 您的 OpenClaw 配置是安全的"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    set -e
+    main "$@"
 fi
-
-echo ""
